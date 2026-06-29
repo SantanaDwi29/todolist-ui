@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import TodoCard from '../components/TodoCard';
@@ -8,12 +8,12 @@ const Dashboard: React.FC = () => {
   const [todos, setTodos] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState<'inbox' | 'today' | 'upcoming' | 'projects'>('inbox');
+  const [currentView, setCurrentView] = useState<'Dashboard' | 'today' | 'upcoming' | 'projects'>('Dashboard');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<any>(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
-  // Inbox Server-Side States
+  // Dashboard Server-Side States
   const [analyticsData, setAnalyticsData] = useState<{ chartData: number[]; focusScore: number }>({ chartData: [0, 0, 0, 0, 0, 0, 0], focusScore: 0 });
   const [activeSession, setActiveSession] = useState<any>(null);
   const [nextMilestone, setNextMilestone] = useState<any>(null);
@@ -199,9 +199,9 @@ const Dashboard: React.FC = () => {
         </div>
         
         <nav className="flex-1 space-y-1 px-4">
-          <button onClick={() => setCurrentView('inbox')} className={`w-full flex items-center gap-4 px-4 py-3 transition-colors ${currentView === 'inbox' ? 'bg-[#1e1e1e] text-white' : 'text-[#8a8a8a] hover:bg-[#1e1e1e]/50'} text-sm`}>
-            <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: currentView === 'inbox' ? "'FILL' 1" : "'FILL' 0" }}>inbox</span>
-            <span>Inbox</span>
+          <button onClick={() => setCurrentView('Dashboard')} className={`w-full flex items-center gap-4 px-4 py-3 transition-colors ${currentView === 'Dashboard' ? 'bg-[#1e1e1e] text-white' : 'text-[#8a8a8a] hover:bg-[#1e1e1e]/50'} text-sm`}>
+            <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: currentView === 'Dashboard' ? "'FILL' 1" : "'FILL' 0" }}>Dashboard</span>
+            <span>Dashboard</span>
           </button>
           
           <button onClick={() => setCurrentView('today')} className={`w-full flex items-center gap-4 px-4 py-3 transition-colors ${currentView === 'today' ? 'bg-[#1e1e1e] text-white' : 'text-[#8a8a8a] hover:bg-[#1e1e1e]/50'} text-sm`}>
@@ -351,13 +351,13 @@ const Dashboard: React.FC = () => {
               </button>
             </div>
           ) : (
-            /* Inbox / Today View */
+            /* Dashboard / Today View */
             <>
               {/* Header Section */}
               <section className="mb-10">
                 <div className="flex justify-between items-end mb-4">
                   <h1 className="text-4xl font-bold text-white tracking-tight capitalize flex items-center gap-3">
-                    {currentView === 'inbox' && <span className="material-symbols-outlined text-4xl">inbox</span>}
+                    {currentView === 'Dashboard' && <span className="material-symbols-outlined text-4xl">Dashboard</span>}
                     {currentView}
                   </h1>
                   <span className="font-mono text-xs text-[#6b6b6b] mb-2">{stats.pending} Pending Tasks</span>
@@ -371,7 +371,7 @@ const Dashboard: React.FC = () => {
                   <TodoCard key={todo.id} todo={todo} onUpdate={fetchData} onEdit={handleOpenForm} />
                 ))}
                 
-                {completedTasks.length > 0 && currentView === 'inbox' && (
+                {completedTasks.length > 0 && currentView === 'Dashboard' && (
                   <div>
                     {completedTasks.map(todo => (
                       <TodoCard key={`completed-${todo.id}`} todo={todo} onUpdate={fetchData} onEdit={handleOpenForm} />
@@ -380,7 +380,7 @@ const Dashboard: React.FC = () => {
                 )}
 
                 {/* Empty Add Task Row */}
-                {(currentView === 'inbox' || currentView === 'today') && (
+                {(currentView === 'Dashboard' || currentView === 'today') && (
                   <div className="group bg-[#131313] hover:bg-[#1a1a1a] flex items-center px-6 py-5 transition-colors border-t border-[#2a2a2a]">
                     <div className="flex items-center justify-center h-5 w-5">
                       <span className="material-symbols-outlined text-[#6b6b6b] text-[18px]">add</span>
@@ -398,7 +398,7 @@ const Dashboard: React.FC = () => {
               </section>
 
               {/* Analytics & Widgets */}
-              {currentView === 'inbox' && (
+              {currentView === 'Dashboard' && (
                 <section className="grid grid-cols-12 gap-6">
                   <div className="col-span-12 lg:col-span-8 bg-[#181818] border border-[#2a2a2a] p-8 flex flex-col justify-between h-[340px]">
                     <div>
