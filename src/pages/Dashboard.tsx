@@ -13,6 +13,13 @@ const Dashboard: React.FC = () => {
   const [editingTodo, setEditingTodo] = useState<any>(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
+  // Inbox Server-Side States
+  const [analyticsData, setAnalyticsData] = useState<{ chartData: number[]; focusScore: number }>({ chartData: [0, 0, 0, 0, 0, 0, 0], focusScore: 0 });
+  const [activeSession, setActiveSession] = useState<any>(null);
+  const [nextMilestone, setNextMilestone] = useState<any>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [customDuration, setCustomDuration] = useState<number>(45);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,12 +36,26 @@ const Dashboard: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [todosRes, catRes] = await Promise.all([
+      const [todosRes, catRes, analyticsRes, sessionRes, milestoneRes] = await Promise.all([
         api.get('/todos'),
-        api.get('/categories')
+        api.get('/categories'),
+        api.get('/analytics').catch(() => ({ data: null })),
+        api.get('/focus/current').catch(() => ({ data: null })),
+        api.get('/milestones/next').catch(() => ({ data: null }))
       ]);
       setTodos(todosRes.data);
       setCategories(catRes.data);
+      if (analyticsRes.data) setAnalyticsData(analyticsRes.data);
+      if (sessionRes.data?.session) {
+        setActiveSession(sessionRes.data.session);
+      } else {
+        setActiveSession(null);
+      }
+      if (milestoneRes.data?.milestone) {
+        setNextMilestone(milestoneRes.data.milestone);
+      } else {
+        setNextMilestone(null);
+      }
     } catch (error: any) {
       if (error.response?.status === 401) {
         handleLogout();
@@ -78,6 +99,50 @@ const Dashboard: React.FC = () => {
         console.error('Failed to quick add', err);
       }
     }
+  };
+
+  useEffect(() => {
+    let interval: any;
+    if (activeSession && activeSession.status === 'active') {
+      interval = setInterval(() => {
+        const now = new Date().getTime();
+        const start = new Date(activeSession.start_time).getTime();
+        const elapsed = Math.floor((now - start) / 1000) + (activeSession.elapsed_seconds || 0);
+        const totalDuration = (activeSession.duration_minutes || 45) * 60;
+        const remaining = totalDuration - elapsed;
+        setTimeRemaining(remaining > 0 ? remaining : 0);
+      }, 1000);
+    } else if (activeSession && activeSession.status === 'paused') {
+      const totalDuration = (activeSession.duration_minutes || 45) * 60;
+      const remaining = totalDuration - (activeSession.elapsed_seconds || 0);
+      setTimeRemaining(remaining > 0 ? remaining : 0);
+    } else {
+      setTimeRemaining(0);
+    }
+    return () => clearInterval(interval);
+  }, [activeSession]);
+
+  const handleToggleSession = async () => {
+    try {
+      if (!activeSession) {
+        const res = await api.post('/focus/start', { duration_minutes: customDuration });
+        setActiveSession(res.data);
+      } else if (activeSession.status === 'active') {
+        const res = await api.post('/focus/pause');
+        setActiveSession(res.data);
+      } else if (activeSession.status === 'paused') {
+        const res = await api.post('/focus/resume');
+        setActiveSession(res.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
   const stats = useMemo(() => {
@@ -338,18 +403,18 @@ const Dashboard: React.FC = () => {
                   <div className="col-span-12 lg:col-span-8 bg-[#181818] border border-[#2a2a2a] p-8 flex flex-col justify-between h-[340px]">
                     <div>
                       <h3 className="font-mono text-[10px] text-[#8a8a8a] uppercase tracking-[0.2em] mb-6">Productivity Analytics</h3>
-                      <p className="text-xl font-bold text-white mb-2 tracking-tight">Your focus score is up 12% today.</p>
+                      <p className="text-xl font-bold text-white mb-2 tracking-tight">Your focus score is {analyticsData.focusScore > 0 ? 'up ' : ''}{analyticsData.focusScore} today.</p>
                     </div>
                     
                     {/* Chart */}
                     <div className="flex items-end gap-1 h-32 mt-auto">
-                      <div className="flex-1 bg-[#2a2a2a] h-[25%] transition-all hover:bg-[#3a3a3a]"></div>
-                      <div className="flex-1 bg-[#2a2a2a] h-[35%] transition-all hover:bg-[#3a3a3a]"></div>
-                      <div className="flex-1 bg-[#2a2a2a] h-[25%] transition-all hover:bg-[#3a3a3a]"></div>
-                      <div className="flex-1 bg-[#2a2a2a] h-[45%] transition-all hover:bg-[#3a3a3a]"></div>
-                      <div className="flex-1 bg-[#404040] h-[75%] transition-all hover:bg-[#505050]"></div>
-                      <div className="flex-1 bg-white h-[65%]"></div>
-                      <div className="flex-1 bg-[#2a2a2a] h-[35%] transition-all hover:bg-[#3a3a3a]"></div>
+                      {analyticsData.chartData.map((val, i) => {
+                        const maxVal = Math.max(...analyticsData.chartData, 1);
+                        const heightPercent = (val / maxVal) * 100;
+                        return (
+                          <div key={i} className={`flex-1 ${i === new Date().getDay() - 1 || (i === 6 && new Date().getDay() === 0) ? 'bg-white' : 'bg-[#2a2a2a] hover:bg-[#3a3a3a] transition-all'}`} style={{ height: `${heightPercent || 5}%` }}></div>
+                        );
+                      })}
                     </div>
                     
                     <div className="mt-6 pt-6 border-t border-[#2a2a2a] flex justify-between items-center text-[10px] font-mono text-[#8a8a8a]">
@@ -360,19 +425,36 @@ const Dashboard: React.FC = () => {
                   
                   <div className="col-span-12 lg:col-span-4 flex flex-col gap-6 h-[340px]">
                     <div className="bg-[#181818] border border-[#2a2a2a] p-8 flex flex-col items-center justify-center text-center flex-1">
-                      <span className="material-symbols-outlined text-white text-[32px] mb-4">timer</span>
+                      <span className={`material-symbols-outlined text-[32px] mb-4 ${activeSession?.status === 'active' ? 'text-[#B4E3AC]' : 'text-white'}`}>timer</span>
                       <h4 className="font-bold text-white text-sm mb-1 tracking-tight">Deep Work Session</h4>
-                      <p className="text-xs text-[#8a8a8a] mb-6">45 minutes remaining</p>
-                      <button className="px-8 py-2 border border-[#404040] text-white text-xs hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-widest">Pause</button>
+                      {!activeSession ? (
+                        <div className="flex items-center justify-center gap-2 mb-6">
+                           <input type="number" value={customDuration} onChange={e => setCustomDuration(Number(e.target.value))} className="w-12 bg-transparent border-b border-[#404040] text-center text-xs text-white focus:outline-none focus:border-white font-mono" min="1" max="120" />
+                           <span className="text-xs text-[#8a8a8a]">min</span>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-[#8a8a8a] mb-6">
+                          {`${formatTime(timeRemaining)} remaining`}
+                        </p>
+                      )}
+                      <button onClick={handleToggleSession} className="px-8 py-2 border border-[#404040] text-white text-xs hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-widest">
+                        {!activeSession ? 'Start' : activeSession.status === 'active' ? 'Pause' : 'Resume'}
+                      </button>
                     </div>
                     
                     <div className="bg-[#181818] border border-[#2a2a2a] p-6 flex flex-col justify-center h-32">
                       <h3 className="font-mono text-[9px] text-[#8a8a8a] uppercase tracking-[0.2em] mb-4">Next Milestone</h3>
-                      <p className="text-sm font-bold text-white mb-4 tracking-tight">v2.0 Beta Release</p>
-                      <div className="w-full h-[2px] bg-[#2a2a2a] overflow-hidden mb-3">
-                         <div className="h-full bg-[#8a8a8a] w-[65%]"></div>
-                      </div>
-                      <span className="text-[9px] font-mono text-[#8a8a8a]">65% Progress</span>
+                      {nextMilestone ? (
+                        <>
+                          <p className="text-sm font-bold text-white mb-4 tracking-tight">{nextMilestone.title}</p>
+                          <div className="w-full h-[2px] bg-[#2a2a2a] overflow-hidden mb-3">
+                            <div className="h-full bg-[#8a8a8a]" style={{ width: `${nextMilestone.progress}%` }}></div>
+                          </div>
+                          <span className="text-[9px] font-mono text-[#8a8a8a]">{nextMilestone.progress}% Progress</span>
+                        </>
+                      ) : (
+                        <p className="text-sm text-[#8a8a8a] italic">No active milestones</p>
+                      )}
                     </div>
                   </div>
                 </section>
