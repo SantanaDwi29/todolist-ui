@@ -78,7 +78,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, ini
             <input
               type="text"
               required
-              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-black focus:border-black transition-all outline-none"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What needs to be done?"
@@ -88,7 +88,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, ini
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
-              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none h-24"
+              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-black focus:border-black transition-all outline-none resize-none h-24"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add some details..."
@@ -99,7 +99,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, ini
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
               <select
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-black focus:border-black transition-all outline-none"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
               >
@@ -112,7 +112,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, ini
               <label className="block text-sm font-medium text-gray-700 mb-1">Deadline</label>
               <input
                 type="date"
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-gray-700"
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-gray-700"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
               />
@@ -125,7 +125,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, ini
               <button 
                 type="button" 
                 onClick={() => setIsCreatingCategory(!isCreatingCategory)}
-                className="text-xs font-medium text-indigo-600 hover:text-indigo-800"
+                className="text-xs font-bold text-black hover:underline"
               >
                 {isCreatingCategory ? 'Select Existing' : '+ New Category'}
               </button>
@@ -134,14 +134,14 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, ini
             {isCreatingCategory ? (
               <input
                 type="text"
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-black focus:border-black transition-all outline-none"
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 placeholder="Enter new category name..."
               />
             ) : (
               <select
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-black focus:border-black transition-all outline-none"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
               >
@@ -157,14 +157,14 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, ini
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2.5 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? 'Saving...' : 'Save Task'}
             </button>

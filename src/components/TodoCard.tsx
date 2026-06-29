@@ -68,10 +68,10 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo, onUpdate, onEdit }) => {
       <div className="flex items-start gap-4">
         <button 
           onClick={handleToggleStatus}
-          className="mt-1 flex-shrink-0 text-gray-400 hover:text-indigo-600 transition-colors"
+          className="mt-1 flex-shrink-0 text-gray-400 hover:text-black transition-colors"
         >
           {todo.status === 'done' ? (
-            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+            <CheckCircle2 className="w-6 h-6 text-black" />
           ) : (
             <Circle className="w-6 h-6" />
           )}
@@ -81,8 +81,8 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo, onUpdate, onEdit }) => {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className={clsx(
-                "text-lg font-semibold text-gray-900 truncate",
-                todo.status === 'done' && "line-through text-gray-500"
+                "text-lg font-bold text-black truncate",
+                todo.status === 'done' && "line-through text-gray-400"
               )}>
                 {todo.title}
               </h3>
@@ -97,10 +97,10 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo, onUpdate, onEdit }) => {
             </div>
             
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => onEdit(todo)} className="p-1.5 text-gray-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50">
+              <button onClick={() => onEdit(todo)} className="p-1.5 text-gray-400 hover:text-black rounded-md hover:bg-gray-100 transition-colors">
                 <Edit2 className="w-4 h-4" />
               </button>
-              <button onClick={handleDelete} className="p-1.5 text-gray-400 hover:text-red-600 rounded-md hover:bg-red-50">
+              <button onClick={handleDelete} className="p-1.5 text-gray-400 hover:text-black rounded-md hover:bg-gray-100 transition-colors">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
