@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter, Tag, Flag, CheckCircle } from 'lucide-react';
+import { Filter, Flag, CheckCircle2 } from 'lucide-react';
 
 interface Category {
   id: number;
@@ -20,52 +20,52 @@ interface FilterBarProps {
   }>>;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ categories, filters, setFilters }) => {
+const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-wrap gap-4 items-center mb-6">
+    <div className="bg-void-container border border-void-border p-4 flex flex-wrap gap-4 items-center mb-6">
       <div className="flex items-center text-gray-500 mr-2">
-        <Filter className="w-5 h-5 mr-2" />
-        <span className="font-bold text-sm text-black">Filters:</span>
+        <Filter className="w-4 h-4 mr-2" />
+        <span className="font-bold text-xs uppercase tracking-widest text-gray-400">Filters:</span>
       </div>
 
-      <div className="flex items-center bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200 focus-within:border-black focus-within:ring-1 focus-within:ring-black">
-        <Flag className="w-4 h-4 text-gray-400 mr-2" />
+      <div className="flex items-center bg-void-surface border border-void-border px-3 py-1.5 focus-within:border-white">
+        <Flag className="w-3 h-3 text-gray-500 mr-2" />
         <select
           name="priority"
           value={filters.priority}
           onChange={handleChange}
-          className="bg-transparent text-sm border-none focus:ring-0 text-black font-medium outline-none cursor-pointer"
+          className="bg-transparent text-xs uppercase tracking-widest border-none focus:ring-0 text-white font-bold outline-none cursor-pointer"
         >
-          <option value="">All Priorities</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="easy">Easy</option>
+          <option value="" className="bg-void-surface">All Priorities</option>
+          <option value="high" className="bg-void-surface">High</option>
+          <option value="medium" className="bg-void-surface">Medium</option>
+          <option value="easy" className="bg-void-surface">Easy</option>
         </select>
       </div>
 
-      <div className="flex items-center bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200 focus-within:border-black focus-within:ring-1 focus-within:ring-black">
-        <CheckCircle className="w-4 h-4 text-gray-400 mr-2" />
+      <div className="flex items-center bg-void-surface border border-void-border px-3 py-1.5 focus-within:border-white">
+        <CheckCircle2 className="w-3 h-3 text-gray-500 mr-2" />
         <select
           name="status"
           value={filters.status}
           onChange={handleChange}
-          className="bg-transparent text-sm border-none focus:ring-0 text-black font-medium outline-none cursor-pointer"
+          className="bg-transparent text-xs uppercase tracking-widest border-none focus:ring-0 text-white font-bold outline-none cursor-pointer"
         >
-          <option value="">All Statuses</option>
-          <option value="done">Done</option>
-          <option value="undone">Undone</option>
+          <option value="" className="bg-void-surface">All Statuses</option>
+          <option value="done" className="bg-void-surface">Done</option>
+          <option value="undone" className="bg-void-surface">Undone</option>
         </select>
       </div>
       
       {(filters.priority || filters.status) && (
         <button 
           onClick={() => setFilters({ category_id: filters.category_id, priority: '', status: '' })}
-          className="text-sm text-gray-500 hover:text-black font-bold ml-auto transition-colors"
+          className="text-xs uppercase tracking-widest text-gray-500 hover:text-white font-bold ml-auto transition-colors"
         >
           Clear Filters
         </button>

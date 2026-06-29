@@ -4,6 +4,70 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900 font-sans antialiased;
+    background-color: #131313;
+    color: #e5e2e1;
+    font-family: 'Geist', sans-serif;
   }
+}
+
+::selection {
+  background-color: #ffffff;
+  color: #131313;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Scrollbars */
+.custom-scrollbar::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track,
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #353535;
+}
+
+/* Task Row Hover */
+.task-row {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.task-row:hover {
+  background-color: #1c1b1b;
+}
+
+/* Checkbox Animation Removed for Custom Checkbox styling */
+
+.project-card:hover .progress-fill {
+  background-color: #ffffff;
+}
+
+.today-indicator {
+  color: #B4E3AC;
+}
+
+.glow-ring {
+  box-shadow: 0 0 15px rgba(180, 227, 172, 0.4), inset 0 0 15px rgba(180, 227, 172, 0.4);
+  transition: box-shadow 0.5s ease-in-out, border-color 0.5s ease-in-out;
+}
+
+.glow-ring-complete {
+  box-shadow: 0 0 25px rgba(180, 227, 172, 0.7), inset 0 0 25px rgba(180, 227, 172, 0.7);
+  border-color: #B4E3AC !important;
 }
