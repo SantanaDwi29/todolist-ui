@@ -53,7 +53,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, ini
       onSuccess();
     } catch (error) {
       console.error('Failed to save todo', error);
-      alert('Failed to save todo. Please check your inputs.');
+      // The error will be caught and displayed by the global toast interceptor
     } finally {
       setLoading(false);
     }
