@@ -5,6 +5,10 @@ const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8088';
 
 const api = axios.create({
   baseURL: baseURL.endsWith('/api') ? baseURL : `${baseURL}/api`,
+  headers: {
+    'X-Client-Id': import.meta.env.VITE_API_CLIENT_ID,
+    'X-Client-Secret': import.meta.env.VITE_API_CLIENT_SECRET,
+  }
 });
 
 api.interceptors.request.use((config) => {

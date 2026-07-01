@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Dashboard - VOID Task Management</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap');
+
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #131313;
+            color: #e5e2e1;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+        }
+
+        /* Task Row Hover Effect */
+        .task-row {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .task-row:hover {
+            background-color: #1c1b1b;
+        }
+
+        /* Custom Checkbox Animation */
+        .checkbox-container input:checked~.checkmark {
+            background-color: #ffffff;
+            border-color: #ffffff;
+        }
+
+        .checkbox-container input:checked~.checkmark::after {
+            display: block;
+        }
+
+        .checkmark::after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid #000000;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#454747",
+                        "primary": "#ffffff",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#353535",
+                        "on-background": "#e5e2e1",
+                        "surface-container-high": "#2a2a2a",
+                        "error": "#ffb4ab",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "surface-bright": "#393939",
+                        "outline-variant": "#444748",
+                        "outline": "#8e9192",
+                        "on-primary-container": "#636565",
+                        "on-error-container": "#ffdad6",
+                        "secondary-container": "#4a4949",
+                        "on-primary-fixed": "#1a1c1c",
+                        "on-primary": "#2f3131",
+                        "secondary-fixed-dim": "#c9c6c5",
+                        "surface-dim": "#131313",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "tertiary-fixed": "#e4e2e1",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "primary-container": "#e2e2e2",
+                        "surface-variant": "#353535",
+                        "on-secondary": "#313030",
+                        "surface-container": "#20201f",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "error-container": "#93000a",
+                        "tertiary-container": "#e4e2e1",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-tertiary-container": "#656464",
+                        "on-secondary-container": "#bab8b7",
+                        "background": "#131313",
+                        "on-surface": "#e5e2e1",
+                        "secondary-fixed": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "secondary": "#c9c6c5",
+                        "on-tertiary": "#303030",
+                        "surface": "#131313",
+                        "primary-fixed": "#e2e2e2",
+                        "inverse-primary": "#5d5f5f",
+                        "inverse-on-surface": "#313030",
+                        "surface-tint": "#c6c6c7",
+                        "inverse-surface": "#e5e2e1",
+                        "success-muted": "#1b2b1b",
+                        "on-success-muted": "#81c784"
+                    },
+                    spacing: {
+                        "unit": "4px", "gutter": "16px", "xs": "4px", "xl": "40px", "lg": "24px", "md": "16px", "margin-desktop": "48px"
+                    },
+                    fontFamily: {
+                        "headline-lg": ["Geist"], "body-lg": ["Geist"], "body-md": ["Geist"], "headline-md": ["Geist"]
+                    },
+                    fontSize: {
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["20px", { "lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-surface text-on-surface">
+    <!-- Side Navigation Shell -->
+    <aside
+        class="fixed left-0 top-0 flex flex-col h-full py-lg px-md w-64 border-r border-outline-variant bg-surface transition-colors duration-150 ease-linear z-50">
+        <div class="mb-xl px-xs">
+            <h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">VOID</h1>
+            <p class="text-[10px] uppercase tracking-[0.2em] text-outline mt-1">Task Management</p>
+        </div>
+        <nav class="flex-1 space-y-1">
+            <!-- Active State: Dashboard -->
+            <a class="flex items-center gap-3 px-3 py-2 text-primary bg-surface-container-highest font-body-md text-body-md transition-colors duration-150"
+                href="#">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">Dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container font-body-md text-body-md transition-colors duration-150"
+                href="#">
+                <span class="material-symbols-outlined">today</span>
+                <span>Today</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container font-body-md text-body-md transition-colors duration-150"
+                href="#">
+                <span class="material-symbols-outlined">event_upcoming</span>
+                <span>Upcoming</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container font-body-md text-body-md transition-colors duration-150"
+                href="#">
+                <span class="material-symbols-outlined">folder</span>
+                <span>Projects</span>
+            </a>
+        </nav>
+        <div class="mt-auto">
+            <button
+                class="w-full py-3 bg-primary text-surface font-bold text-body-md flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all">
+                <span class="material-symbols-outlined">add</span>
+                Add Task
+            </button>
+        </div>
+    </aside>
+    <!-- Top App Bar Shell -->
+    <header
+        class="fixed top-0 right-0 left-64 h-16 border-b border-outline-variant bg-surface flex justify-between items-center px-margin-desktop z-40">
+        <div class="flex items-center gap-4">
+            <h2 class="font-headline-md text-headline-md text-primary">Dashboard</h2>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] text-outline uppercase tracking-widest">Efficiency</span>
+                <span class="font-mono text-body-md text-primary">75% Completed</span>
+            </div>
+            <div class="h-8 w-[1px] bg-outline-variant"></div>
+            <div class="flex items-center gap-4">
+                <button class="text-on-surface-variant hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined">analytics</span>
+                </button>
+                <button class="text-on-surface-variant hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined">settings</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content Canvas -->
+    <main class="ml-64 pt-16 min-h-screen bg-surface-dim">
+        <div class="max-w-[1000px] mx-auto px-margin-desktop py-xl">
+            <!-- Header Section with Stats -->
+            <section class="mb-xl">
+                <div class="flex justify-between items-end mb-sm">
+                    <h1 class="font-headline-lg text-headline-lg text-primary tracking-tighter">Dashboard</h1>
+                    <span class="font-mono text-xs text-outline mb-1">12 Pending Tasks</span>
+                </div>
+                <div class="w-full h-[1px] bg-outline-variant"></div>
+            </section>
+            <!-- Task List View -->
+            <section class="space-y-px bg-outline-variant/30 border border-outline-variant overflow-hidden">
+                <!-- Task Entry 1 -->
+                <div class="task-row group bg-surface h-16 flex items-center px-md">
+                    <label class="checkbox-container relative block cursor-pointer select-none">
+                        <input class="absolute opacity-0 cursor-pointer h-0 w-0" type="checkbox" />
+                        <span class="checkmark h-4 w-4 border border-outline block relative transition-all"></span>
+                    </label>
+                    <div class="ml-md flex-1 flex items-center justify-between">
+                        <div>
+                            <p class="font-body-md text-body-md text-on-surface">Finalize design system documentation
+                            </p>
+                            <span class="text-[10px] font-mono text-outline uppercase tracking-tighter">Project: Void
+                                UI</span>
+                        </div>
+                        <div class="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span
+                                class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">calendar_today</span>
+                            <span
+                                class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">more_vert</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Task Entry 2 (Priority) -->
+                <div class="task-row group bg-surface h-16 flex items-center px-md border-l-2 border-primary">
+                    <label class="checkbox-container relative block cursor-pointer select-none">
+                        <input class="absolute opacity-0 cursor-pointer h-0 w-0" type="checkbox" />
+                        <span class="checkmark h-4 w-4 border border-outline block relative transition-all"></span>
+                    </label>
+                    <div class="ml-md flex-1 flex items-center justify-between">
+                        <div>
+                            <p class="font-body-md text-body-md text-on-surface">Client meeting: Sprint 4 kickoff</p>
+                            <span class="text-[10px] font-mono text-outline uppercase tracking-tighter">14:00 PM •
+                                Remote</span>
+                        </div>
+                        <div class="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span
+                                class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">calendar_today</span>
+                            <span
+                                class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">more_vert</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Task Entry 3 (Completed State) -->
+                <div class="task-row group bg-surface-container-low h-16 flex items-center px-md">
+                    <label class="checkbox-container relative block cursor-pointer select-none">
+                        <input checked="" class="absolute opacity-0 cursor-pointer h-0 w-0" type="checkbox" />
+                        <span
+                            class="checkmark h-4 w-4 border border-on-success-muted bg-on-success-muted block relative transition-all"></span>
+                    </label>
+                    <div class="ml-md flex-1 flex items-center justify-between">
+                        <div>
+                            <p
+                                class="font-body-md text-body-md text-outline line-through decoration-on-success-muted/30">
+                                Review architectural patterns</p>
+                            <span
+                                class="text-[10px] font-mono text-on-success-muted uppercase tracking-tighter">Completed</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-on-success-muted text-sm">check_circle</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Task Entry 4 -->
+                <div class="task-row group bg-surface h-16 flex items-center px-md">
+                    <label class="checkbox-container relative block cursor-pointer select-none">
+                        <input class="absolute opacity-0 cursor-pointer h-0 w-0" type="checkbox" />
+                        <span class="checkmark h-4 w-4 border border-outline block relative transition-all"></span>
+                    </label>
+                    <div class="ml-md flex-1 flex items-center justify-between">
+                        <div>
+                            <p class="font-body-md text-body-md text-on-surface">Sync database with staging environment
+                            </p>
+                            <span class="text-[10px] font-mono text-outline uppercase tracking-tighter">Backend</span>
+                        </div>
+                        <div class="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span
+                                class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">calendar_today</span>
+                            <span
+                                class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">more_vert</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Empty Add Task Row -->
+                <div class="task-row group bg-surface h-16 flex items-center px-md border-t border-outline-variant/10">
+                    <span class="material-symbols-outlined text-outline ml-[2px]">add</span>
+                    <input
+                        class="ml-md flex-1 bg-transparent border-none text-body-md font-body-md focus:ring-0 placeholder-outline/50"
+                        placeholder="Press 'Enter' to add a new task..." type="text" />
+                </div>
+            </section>
+            <!-- Focus Module (Bento Pattern) -->
+            <section class="mt-xl grid grid-cols-12 gap-gutter">
+                <div
+                    class="col-span-8 bg-surface-container border border-outline-variant p-lg flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-mono text-xs text-outline uppercase tracking-widest mb-md">Productivity
+                            Analytics</h3>
+                        <p class="font-headline-md text-headline-md text-primary mb-xl">Your focus score is up 12%
+                            today.</p>
+                        <!-- Visual Indicator -->
+                        <div class="flex items-end gap-1 h-32">
+                            <div class="flex-1 bg-outline-variant hover:bg-primary transition-colors h-[20%]"></div>
+                            <div class="flex-1 bg-outline-variant hover:bg-primary transition-colors h-[40%]"></div>
+                            <div class="flex-1 bg-outline-variant hover:bg-primary transition-colors h-[35%]"></div>
+                            <div class="flex-1 bg-outline-variant hover:bg-primary transition-colors h-[65%]"></div>
+                            <div class="flex-1 bg-outline-variant hover:bg-primary transition-colors h-[90%]"></div>
+                            <div class="flex-1 bg-primary h-[85%]"></div>
+                            <div class="flex-1 bg-outline-variant hover:bg-primary transition-colors h-[50%]"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-lg border-t border-outline-variant pt-md">
+                        <span class="text-xs font-mono text-outline">Mon — Sun (Current Week)</span>
+                        <a class="text-xs font-bold text-primary flex items-center gap-1 group" href="#">
+                            Full Report
+                            <span
+                                class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-span-4 flex flex-col gap-gutter">
+                    <div
+                        class="flex-1 bg-surface-container border border-outline-variant p-lg flex flex-col justify-center items-center text-center">
+                        <span class="material-symbols-outlined text-primary mb-md" style="font-size: 32px;">timer</span>
+                        <h4 class="font-body-md text-body-md font-bold mb-xs">Deep Work Session</h4>
+                        <p class="text-xs text-outline mb-md">45 minutes remaining</p>
+                        <button
+                            class="px-lg py-2 border border-outline hover:border-primary text-xs transition-colors">Pause</button>
+                    </div>
+                    <div
+                        class="flex-1 bg-surface-container border border-outline-variant p-lg flex flex-col justify-between">
+                        <h4 class="font-mono text-[10px] text-outline uppercase tracking-widest">Next Milestone</h4>
+                        <p class="text-body-md text-primary mt-2">v2.0 Beta Release</p>
+                        <div class="mt-md w-full bg-outline-variant h-[2px]">
+                            <div class="bg-primary h-full w-[65%]"></div>
+                        </div>
+                        <span class="text-[10px] text-outline mt-2">65% Progress</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <!-- Contextual Quick-Action Bar (Fixed Bottom) -->
+    <div class="fixed bottom-lg right-lg flex gap-md z-50">
+        <button
+            class="h-12 w-12 bg-primary text-surface flex items-center justify-center shadow-lg hover:scale-105 transition-transform active:scale-95">
+            <span class="material-symbols-outlined">bolt</span>
+        </button>
+        <button
+            class="h-12 w-12 bg-surface-container border border-outline-variant text-primary flex items-center justify-center shadow-lg hover:bg-surface-container-highest transition-all"
+            id="search-trigger">
+            <span class="material-symbols-outlined">search</span>
+        </button>
+    </div>
+    <!-- Interaction Script -->
+    <script>
+        document.querySelectorAll('.task-row').forEach(row => {
+            row.addEventListener('click', (e) => {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = row.querySelector('input[type="checkbox"]');
+                    if (checkbox) checkbox.checked = !checkbox.checked;
+                }
+            });
+        });
+
+        // Simple Search Toggle Mockup
+        const searchTrigger = document.getElementById('search-trigger');
+        searchTrigger.addEventListener('click', () => {
+            const query = prompt("Search tasks...");
+            if (query) console.log("Searching for:", query);
+        });
+    </script>
+</body>
+
+</html>
