@@ -7,12 +7,15 @@ import DashboardHomeView from '../components/views/DashboardHomeView';
 import CalendarView from '../components/views/CalendarView';
 import UpcomingView from '../components/views/UpcomingView';
 import ProjectsView from '../components/views/ProjectsView';
+import ProjectDetailView from '../components/views/ProjectDetailView';
 
 const Dashboard: React.FC = () => {
   const [todos, setTodos] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<'Dashboard' | 'calendar' | 'upcoming' | 'projects'>('Dashboard');
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<any>(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -40,15 +43,17 @@ const Dashboard: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [todosRes, catRes, analyticsRes, sessionRes, milestoneRes] = await Promise.all([
+      const [todosRes, catRes, projectsRes, analyticsRes, sessionRes, milestoneRes] = await Promise.all([
         api.get('/todos'),
         api.get('/categories'),
+        api.get('/projects'),
         api.get('/analytics').catch(() => ({ data: null })),
         api.get('/focus/current').catch(() => ({ data: null })),
         api.get('/milestones/next').catch(() => ({ data: null }))
       ]);
-      setTodos(todosRes.data);
-      setCategories(catRes.data);
+      setTodos(todosRes.data?.data || todosRes.data || []);
+      setCategories(catRes.data?.data || catRes.data || []);
+      setProjects(projectsRes.data?.data || projectsRes.data || []);
       if (analyticsRes.data) setAnalyticsData(analyticsRes.data);
       if (sessionRes.data?.session) {
         setActiveSession(sessionRes.data.session);
@@ -75,8 +80,12 @@ const Dashboard: React.FC = () => {
     navigate('/login');
   };
 
-  const handleOpenForm = (todo: any = null) => {
-    setEditingTodo(todo);
+  const handleOpenForm = (todo: any = null, projectId?: number) => {
+    if (projectId) {
+      setEditingTodo({ project_id: projectId });
+    } else {
+      setEditingTodo(todo);
+    }
     setIsFormOpen(true);
   };
 
@@ -218,7 +227,7 @@ const Dashboard: React.FC = () => {
             <span>Upcoming</span>
           </button>
           
-          <button onClick={() => setCurrentView('projects')} className={`w-full flex items-center gap-4 px-4 py-3 transition-colors ${currentView === 'projects' ? 'bg-[#1e1e1e] text-white' : 'text-[#8a8a8a] hover:bg-[#1e1e1e]/50'} text-sm`}>
+          <button onClick={() => { setCurrentView('projects'); setSelectedProjectId(null); }} className={`w-full flex items-center gap-4 px-4 py-3 transition-colors ${currentView === 'projects' ? 'bg-[#1e1e1e] text-white' : 'text-[#8a8a8a] hover:bg-[#1e1e1e]/50'} text-sm`}>
             <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: currentView === 'projects' ? "'FILL' 1" : "'FILL' 0" }}>folder</span>
             <span>Projects</span>
           </button>
@@ -271,7 +280,31 @@ const Dashboard: React.FC = () => {
           ) : currentView === 'upcoming' ? (
             <UpcomingView groupedTasks={groupedTasks} fetchData={fetchData} handleOpenForm={handleOpenForm} />
           ) : currentView === 'projects' ? (
-            <ProjectsView categories={categories} todos={todos} handleOpenForm={handleOpenForm} />
+            selectedProjectId ? (
+              <ProjectDetailView 
+                project={projects.find(p => p.id === selectedProjectId)}
+                todos={todos}
+                handleOpenForm={handleOpenForm}
+                onBack={() => setSelectedProjectId(null)}
+                onDeleteProject={async (id) => {
+                  try {
+                    await api.delete(`/projects/${id}`);
+                    setSelectedProjectId(null);
+                    fetchData();
+                  } catch (err) {
+                    console.error(err);
+                  }
+                }}
+              />
+            ) : (
+              <ProjectsView 
+                projects={projects} 
+                todos={todos} 
+                handleOpenForm={handleOpenForm} 
+                fetchData={fetchData} 
+                onSelectProject={(id) => setSelectedProjectId(id)}
+              />
+            )
           ) : currentView === 'calendar' ? (
             <CalendarView todos={todos} handleOpenForm={handleOpenForm} />
           ) : (
@@ -313,6 +346,7 @@ const Dashboard: React.FC = () => {
           onClose={handleCloseForm}
           onSuccess={handleFormSuccess}
           categories={categories}
+          projects={projects}
           initialData={editingTodo}
         />
       )}

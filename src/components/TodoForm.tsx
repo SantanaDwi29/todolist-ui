@@ -11,14 +11,16 @@ interface TodoFormProps {
   onClose: () => void;
   onSuccess: () => void;
   categories: Category[];
+  projects?: any[];
   initialData?: any;
 }
 
-const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, initialData }) => {
+const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, projects = [], initialData }) => {
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [priority, setPriority] = useState(initialData?.priority || 'easy');
   const [categoryId, setCategoryId] = useState(initialData?.category_id || '');
+  const [projectId, setProjectId] = useState(initialData?.project_id || '');
   const [deadline, setDeadline] = useState(initialData?.deadline ? initialData.deadline.split('T')[0] : '');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
@@ -41,6 +43,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, ini
         description,
         priority,
         category_id: finalCategoryId ? parseInt(finalCategoryId) : null,
+        project_id: projectId ? parseInt(projectId) : null,
         deadline: deadline ? new Date(deadline).toISOString() : null,
       };
 
@@ -150,6 +153,20 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, ini
                 ))}
               </select>
             )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Project</label>
+            <select
+              className="w-full px-4 py-2 bg-white border border-white focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors text-black"
+              value={projectId}
+              onChange={(e) => setProjectId(e.target.value)}
+            >
+              <option value="">No Project</option>
+              {projects.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
           </div>
 
           <div className="pt-4 flex gap-3">
