@@ -1,37 +1,13 @@
-import React, { useState } from 'react';
-import api from '../../api/axios';
+import React from 'react';
 
 interface ProjectsViewProps {
   projects: any[];
   todos: any[];
-  handleOpenForm: (todo?: any, projectId?: number) => void;
-  fetchData: () => void;
+  onOpenProjectCreateModal: () => void;
   onSelectProject: (id: number) => void;
 }
 
-const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, todos, handleOpenForm, fetchData, onSelectProject }) => {
-  const [isCreatingProject, setIsCreatingProject] = useState(false);
-  const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectDesc, setNewProjectDesc] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleCreateProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProjectName) return;
-    setLoading(true);
-    try {
-      await api.post('/projects', { name: newProjectName, description: newProjectDesc });
-      setNewProjectName('');
-      setNewProjectDesc('');
-      setIsCreatingProject(false);
-      fetchData();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, todos, onOpenProjectCreateModal, onSelectProject }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {projects.map(proj => {
@@ -71,53 +47,10 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, todos, handleOpen
         );
       })}
       
-      {/* New Project Form */}
-      {isCreatingProject ? (
-        <article className="flex flex-col bg-[#181818] border border-white transition-colors duration-300 p-8">
-          <h3 className="text-sm font-bold tracking-widest text-white uppercase mb-6">New Project</h3>
-          <form onSubmit={handleCreateProject} className="flex flex-col h-full space-y-4">
-            <div>
-              <input
-                type="text"
-                required
-                className="w-full px-4 py-2 bg-[#131313] border border-[#333] focus:outline-none focus:border-white transition-colors text-white placeholder-gray-500 text-sm"
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-                placeholder="Project Name"
-              />
-            </div>
-            <div>
-              <textarea
-                className="w-full px-4 py-2 bg-[#131313] border border-[#333] focus:outline-none focus:border-white transition-colors resize-none h-20 text-white placeholder-gray-500 text-sm"
-                value={newProjectDesc}
-                onChange={(e) => setNewProjectDesc(e.target.value)}
-                placeholder="Description"
-              />
-            </div>
-            <div className="mt-auto pt-4 flex gap-2">
-              <button
-                type="button"
-                onClick={() => setIsCreatingProject(false)}
-                className="flex-1 py-2 bg-[#131313] border border-[#333] text-[#8a8a8a] hover:text-white transition-colors text-xs uppercase tracking-widest font-bold"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-2 bg-white text-black font-bold hover:bg-gray-200 transition-colors disabled:opacity-50 text-xs uppercase tracking-widest"
-              >
-                {loading ? '...' : 'Create'}
-              </button>
-            </div>
-          </form>
-        </article>
-      ) : (
-        <button onClick={() => setIsCreatingProject(true)} className="flex flex-col items-center justify-center border-2 border-dashed border-[#2a2a2a] hover:border-white hover:bg-[#1a1a1a] transition-all duration-300 py-8 h-full min-h-[250px]">
-          <span className="material-symbols-outlined text-[32px] mb-4 text-[#6b6b6b]">add_circle</span>
-          <span className="text-xs uppercase tracking-[0.2em] text-[#8a8a8a] font-mono">Create New Project</span>
-        </button>
-      )}
+      <button onClick={onOpenProjectCreateModal} className="flex flex-col items-center justify-center border-2 border-dashed border-[#2a2a2a] hover:border-white hover:bg-[#1a1a1a] transition-all duration-300 py-8 h-full min-h-[250px]">
+        <span className="material-symbols-outlined text-[32px] mb-4 text-[#6b6b6b]">add_circle</span>
+        <span className="text-xs uppercase tracking-[0.2em] text-[#8a8a8a] font-mono">Create New Project</span>
+      </button>
     </div>
   );
 };

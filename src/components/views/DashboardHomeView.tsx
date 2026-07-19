@@ -17,6 +17,8 @@ interface DashboardHomeViewProps {
   formatTime: (sec: number) => string;
   timeRemaining: number;
   handleToggleSession: () => void;
+  handleStopSession: () => void;
+  handleOpenMilestoneModal: () => void;
   nextMilestone: any;
 }
 
@@ -24,7 +26,8 @@ const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
   stats, activeTasks, completedTasks, fetchData, handleOpenForm,
   newTaskTitle, setNewTaskTitle, handleQuickAdd,
   analyticsData, activeSession, customDuration, setCustomDuration,
-  formatTime, timeRemaining, handleToggleSession, nextMilestone
+  formatTime, timeRemaining, handleToggleSession, handleStopSession, 
+  handleOpenMilestoneModal, nextMilestone
 }) => {
   return (
     <>
@@ -95,22 +98,42 @@ const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
             <span className={`material-symbols-outlined text-[32px] mb-4 ${activeSession?.status === 'active' ? 'text-[#B4E3AC]' : 'text-white'}`}>timer</span>
             <h4 className="font-bold text-white text-sm mb-1 tracking-tight">Deep Work Session</h4>
             {!activeSession ? (
-              <div className="flex items-center justify-center gap-2 mb-6">
-                 <input type="number" value={customDuration} onChange={e => setCustomDuration(Number(e.target.value))} className="w-12 bg-transparent border-b border-[#404040] text-center text-xs text-white focus:outline-none focus:border-white font-mono" min="1" max="120" />
-                 <span className="text-xs text-[#8a8a8a]">min</span>
-              </div>
+              <>
+                <div className="flex items-center justify-center gap-2 mb-6">
+                   <input type="number" value={customDuration} onChange={e => setCustomDuration(Number(e.target.value))} className="w-12 bg-transparent border-b border-[#404040] text-center text-xs text-white focus:outline-none focus:border-white font-mono" min="1" max="120" />
+                   <span className="text-xs text-[#8a8a8a]">min</span>
+                </div>
+                <button onClick={handleToggleSession} className="px-8 py-2 border border-[#404040] text-white text-xs hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-widest">
+                  Start
+                </button>
+              </>
             ) : (
-              <p className="text-xs text-[#8a8a8a] mb-6">
-                {`${formatTime(timeRemaining)} remaining`}
-              </p>
+              <>
+                <p className="text-xs text-[#8a8a8a] mb-6">
+                  {`${formatTime(timeRemaining)} remaining`}
+                </p>
+                <div className="flex gap-2 w-full justify-center px-4">
+                  <button onClick={handleToggleSession} className="flex-1 py-2 border border-[#404040] text-white text-xs hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-widest">
+                    {activeSession.status === 'active' ? 'Pause' : 'Resume'}
+                  </button>
+                  <button onClick={handleStopSession} className="flex-1 py-2 border border-red-800 text-red-500 text-xs hover:bg-red-800 hover:text-white transition-colors font-mono uppercase tracking-widest">
+                    Stop
+                  </button>
+                </div>
+              </>
             )}
-            <button onClick={handleToggleSession} className="px-8 py-2 border border-[#404040] text-white text-xs hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-widest">
-              {!activeSession ? 'Start' : activeSession.status === 'active' ? 'Pause' : 'Resume'}
-            </button>
           </div>
           
           <div className="bg-[#181818] border border-[#2a2a2a] p-6 flex flex-col justify-center h-32">
-            <h3 className="font-mono text-[9px] text-[#8a8a8a] uppercase tracking-[0.2em] mb-4">Next Milestone</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-mono text-[9px] text-[#8a8a8a] uppercase tracking-[0.2em]">Next Milestone</h3>
+              <button 
+                onClick={handleOpenMilestoneModal} 
+                className="text-[9px] font-mono text-[#8a8a8a] hover:text-white uppercase tracking-widest transition-colors"
+              >
+                + New
+              </button>
+            </div>
             {nextMilestone ? (
               <>
                 <p className="text-sm font-bold text-white mb-4 tracking-tight">{nextMilestone.title}</p>

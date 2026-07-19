@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter, Flag, CheckCircle2 } from 'lucide-react';
+import { Filter, Flag, CheckCircle2, Folder } from 'lucide-react';
 
 interface Category {
   id: number;
@@ -20,7 +20,7 @@ interface FilterBarProps {
   }>>;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
+const FilterBar: React.FC<FilterBarProps> = ({ categories, filters, setFilters }) => {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
@@ -31,6 +31,21 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       <div className="flex items-center text-gray-500 mr-2">
         <Filter className="w-4 h-4 mr-2" />
         <span className="font-bold text-xs uppercase tracking-widest text-gray-400">Filters:</span>
+      </div>
+
+      <div className="flex items-center bg-white border border-white px-3 py-1.5 focus-within:border-gray-300">
+        <Folder className="w-3 h-3 text-gray-500 mr-2" />
+        <select
+          name="category_id"
+          value={filters.category_id}
+          onChange={handleChange}
+          className="bg-transparent text-xs uppercase tracking-widest border-none focus:ring-0 text-black font-bold outline-none cursor-pointer"
+        >
+          <option value="" className="bg-white text-black">All Categories</option>
+          {categories.map(c => (
+            <option key={c.id} value={c.id.toString()} className="bg-white text-black">{c.name}</option>
+          ))}
+        </select>
       </div>
 
       <div className="flex items-center bg-white border border-white px-3 py-1.5 focus-within:border-gray-300">
@@ -62,9 +77,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
         </select>
       </div>
       
-      {(filters.priority || filters.status) && (
+      {(filters.category_id || filters.priority || filters.status) && (
         <button 
-          onClick={() => setFilters({ category_id: filters.category_id, priority: '', status: '' })}
+          onClick={() => setFilters({ category_id: '', priority: '', status: '' })}
           className="text-xs uppercase tracking-widest text-gray-500 hover:text-white font-bold ml-auto transition-colors"
         >
           Clear Filters

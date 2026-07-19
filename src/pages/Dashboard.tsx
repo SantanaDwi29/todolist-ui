@@ -1,8 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import TodoCard from '../components/TodoCard';
 import TodoForm from '../components/TodoForm';
+import FilterBar from '../components/FilterBar';
+import MilestoneFormModal from '../components/MilestoneFormModal';
+import CategoryManagerModal from '../components/CategoryManagerModal';
+import ProjectFormModal from '../components/ProjectFormModal';
 import DashboardHomeView from '../components/views/DashboardHomeView';
 import CalendarView from '../components/views/CalendarView';
 import UpcomingView from '../components/views/UpcomingView';
@@ -17,8 +20,30 @@ const Dashboard: React.FC = () => {
   const [currentView, setCurrentView] = useState<'Dashboard' | 'calendar' | 'upcoming' | 'projects'>('Dashboard');
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isMilestoneOpen, setIsMilestoneOpen] = useState(false);
+  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
+  const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<any>(null);
   const [editingTodo, setEditingTodo] = useState<any>(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+
+  // Audio References
+  const tickAudioRef = useRef<HTMLAudioElement | null>(null);
+  const chimeAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    tickAudioRef.current = new Audio('/sounds/tick.mp3');
+    tickAudioRef.current.volume = 0.4;
+    chimeAudioRef.current = new Audio('/sounds/chime.mp3');
+    chimeAudioRef.current.volume = 0.6;
+  }, []);
+
+  // Filtering state
+  const [filters, setFilters] = useState({
+    category_id: '',
+    priority: '',
+    status: '',
+  });
 
   // Dashboard Server-Side States
   const [analyticsData, setAnalyticsData] = useState<{ chartData: number[]; focusScore: number }>({ chartData: [0, 0, 0, 0, 0, 0, 0], focusScore: 0 });
@@ -117,13 +142,20 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     let interval: any;
     if (activeSession && activeSession.status === 'active') {
-      interval = setInterval(() => {
+      const calcRemaining = () => {
         const now = new Date().getTime();
         const start = new Date(activeSession.start_time).getTime();
         const elapsed = Math.floor((now - start) / 1000) + (activeSession.elapsed_seconds || 0);
         const totalDuration = (activeSession.duration_minutes || 45) * 60;
         const remaining = totalDuration - elapsed;
-        setTimeRemaining(remaining > 0 ? remaining : 0);
+        return remaining > 0 ? remaining : 0;
+      };
+      
+      // Calculate immediately on start/mount
+      setTimeRemaining(calcRemaining());
+
+      interval = setInterval(() => {
+        setTimeRemaining(calcRemaining());
       }, 1000);
     } else if (activeSession && activeSession.status === 'paused') {
       const totalDuration = (activeSession.duration_minutes || 45) * 60;
@@ -135,8 +167,46 @@ const Dashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, [activeSession]);
 
+  const playBeep = () => {
+    if (tickAudioRef.current) {
+      tickAudioRef.current.currentTime = 0;
+      tickAudioRef.current.play().catch(e => console.error('Audio tick failed', e));
+    }
+  };
+
+  const playChime = () => {
+    if (chimeAudioRef.current) {
+      chimeAudioRef.current.currentTime = 0;
+      chimeAudioRef.current.play().catch(e => console.error('Audio chime failed', e));
+    }
+  };
+
+  useEffect(() => {
+    if (activeSession && activeSession.status === 'active') {
+      if (timeRemaining > 0 && timeRemaining <= 10) {
+        playBeep();
+      } else if (timeRemaining === 0) {
+        // Double check if the session is actually completed to avoid startup race conditions
+        const now = new Date().getTime();
+        const start = new Date(activeSession.start_time).getTime();
+        const elapsed = Math.floor((now - start) / 1000) + (activeSession.elapsed_seconds || 0);
+        const totalDuration = (activeSession.duration_minutes || 45) * 60;
+        const remaining = totalDuration - elapsed;
+
+        if (remaining <= 0) {
+          playChime();
+          handleStopSession();
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeRemaining, activeSession]);
+
   const handleToggleSession = async () => {
     try {
+      // Play tick sound synchronously to unlock browser audio autoplay permissions
+      playBeep();
+
       if (!activeSession) {
         const res = await api.post('/focus/start', { duration_minutes: customDuration });
         setActiveSession(res.data);
@@ -147,6 +217,16 @@ const Dashboard: React.FC = () => {
         const res = await api.post('/focus/resume');
         setActiveSession(res.data);
       }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleStopSession = async () => {
+    try {
+      await api.post('/focus/stop');
+      setActiveSession(null);
+      fetchData();
     } catch (err) {
       console.error(err);
     }
@@ -165,8 +245,18 @@ const Dashboard: React.FC = () => {
     return { total, completed, completionPercentage, pending: total - completed };
   }, [todos]);
 
-  const activeTasks = useMemo(() => todos.filter(t => t.status !== 'done'), [todos]);
-  const completedTasks = useMemo(() => todos.filter(t => t.status === 'done'), [todos]);
+  // Filter todos based on category, priority, and status
+  const filteredTodos = useMemo(() => {
+    return todos.filter(t => {
+      const categoryMatch = !filters.category_id || t.category_id?.toString() === filters.category_id;
+      const priorityMatch = !filters.priority || t.priority === filters.priority;
+      const statusMatch = !filters.status || t.status === filters.status;
+      return categoryMatch && priorityMatch && statusMatch;
+    });
+  }, [todos, filters]);
+
+  const activeTasks = useMemo(() => filteredTodos.filter(t => t.status !== 'done'), [filteredTodos]);
+  const completedTasks = useMemo(() => filteredTodos.filter(t => t.status === 'done'), [filteredTodos]);
 
   const groupedTasks = useMemo(() => {
     const groups: Record<string, any[]> = {};
@@ -231,6 +321,11 @@ const Dashboard: React.FC = () => {
             <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: currentView === 'projects' ? "'FILL' 1" : "'FILL' 0" }}>folder</span>
             <span>Projects</span>
           </button>
+
+          <button onClick={() => setIsCategoryManagerOpen(true)} className="w-full flex items-center gap-4 px-4 py-3 text-[#8a8a8a] hover:bg-[#1e1e1e]/50 transition-colors text-sm">
+            <span className="material-symbols-outlined text-[20px]">category</span>
+            <span>Categories</span>
+          </button>
         </nav>
 
         <div className="mt-auto p-4">
@@ -275,6 +370,10 @@ const Dashboard: React.FC = () => {
       <main className="ml-64 pt-[72px] min-h-screen">
         <div className="max-w-[1000px] mx-auto px-10 py-12">
           
+          {!loading && currentView !== 'projects' && (
+            <FilterBar categories={categories} filters={filters} setFilters={setFilters} />
+          )}
+          
           {loading ? (
             <div className="py-20 text-center text-[#6b6b6b] font-mono animate-pulse">Loading data...</div>
           ) : currentView === 'upcoming' ? (
@@ -295,18 +394,25 @@ const Dashboard: React.FC = () => {
                     console.error(err);
                   }
                 }}
+                onEditProject={() => {
+                  const proj = projects.find(p => p.id === selectedProjectId);
+                  setEditingProject(proj);
+                  setIsProjectFormOpen(true);
+                }}
               />
             ) : (
               <ProjectsView 
                 projects={projects} 
                 todos={todos} 
-                handleOpenForm={handleOpenForm} 
-                fetchData={fetchData} 
+                onOpenProjectCreateModal={() => {
+                  setEditingProject(null);
+                  setIsProjectFormOpen(true);
+                }}
                 onSelectProject={(id) => setSelectedProjectId(id)}
               />
             )
           ) : currentView === 'calendar' ? (
-            <CalendarView todos={todos} handleOpenForm={handleOpenForm} />
+            <CalendarView todos={filteredTodos} handleOpenForm={handleOpenForm} />
           ) : (
             <DashboardHomeView
               stats={stats}
@@ -324,6 +430,8 @@ const Dashboard: React.FC = () => {
               formatTime={formatTime}
               timeRemaining={timeRemaining}
               handleToggleSession={handleToggleSession}
+              handleStopSession={handleStopSession}
+              handleOpenMilestoneModal={() => setIsMilestoneOpen(true)}
               nextMilestone={nextMilestone}
             />
           )}
@@ -348,6 +456,41 @@ const Dashboard: React.FC = () => {
           categories={categories}
           projects={projects}
           initialData={editingTodo}
+        />
+      )}
+
+      {isMilestoneOpen && (
+        <MilestoneFormModal 
+          onClose={() => setIsMilestoneOpen(false)}
+          onSuccess={() => {
+            setIsMilestoneOpen(false);
+            fetchData();
+          }}
+        />
+      )}
+
+      {isCategoryManagerOpen && (
+        <CategoryManagerModal 
+          categories={categories}
+          onClose={() => setIsCategoryManagerOpen(false)}
+          onSuccess={() => {
+            fetchData();
+          }}
+        />
+      )}
+
+      {isProjectFormOpen && (
+        <ProjectFormModal 
+          initialData={editingProject}
+          onClose={() => {
+            setIsProjectFormOpen(false);
+            setEditingProject(null);
+          }}
+          onSuccess={() => {
+            setIsProjectFormOpen(false);
+            setEditingProject(null);
+            fetchData();
+          }}
         />
       )}
     </div>

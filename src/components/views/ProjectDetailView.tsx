@@ -6,9 +6,10 @@ interface ProjectDetailViewProps {
   handleOpenForm: (todo?: any, projectId?: number) => void;
   onBack: () => void;
   onDeleteProject: (id: number) => void;
+  onEditProject: () => void;
 }
 
-const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, todos, handleOpenForm, onBack, onDeleteProject }) => {
+const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, todos, handleOpenForm, onBack, onDeleteProject, onEditProject }) => {
   if (!project) return null;
 
   const projTasks = todos.filter(t => t.project_id === project.id);
@@ -30,12 +31,18 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, todos, h
             Status: {project.status}
           </span>
         </div>
-        <div className="ml-auto flex gap-4">
+        <div className="ml-auto flex gap-3">
           <button 
             onClick={() => handleOpenForm(null, project.id)}
             className="px-6 py-2 bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors"
           >
             + Add Task
+          </button>
+          <button 
+            onClick={onEditProject}
+            className="px-4 py-2 border border-[#404040] text-white hover:bg-white hover:text-black transition-colors text-xs font-bold uppercase tracking-widest"
+          >
+            Edit
           </button>
           <button 
             onClick={() => {
