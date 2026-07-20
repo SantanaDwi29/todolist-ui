@@ -12,9 +12,22 @@ interface ProjectDetailViewProps {
 const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, todos, handleOpenForm, onBack, onDeleteProject, onEditProject }) => {
   if (!project) return null;
 
-  const projTasks = todos.filter(t => t.project_id === project.id);
+  const projTasks = React.useMemo(() => {
+    const priorityWeight: Record<string, number> = { high: 1, medium: 2, easy: 3 };
+    const rawTasks = todos.filter(t => t.project_id === project.id);
+    return [...rawTasks].sort((a, b) => {
+      if (a.status !== b.status) {
+        return a.status === 'done' ? 1 : -1;
+      }
+      const weightA = priorityWeight[a.priority] || 4;
+      const weightB = priorityWeight[b.priority] || 4;
+      return weightA - weightB;
+    });
+  }, [todos, project.id]);
+
   const projDone = projTasks.filter(t => t.status === 'done').length;
   const progress = projTasks.length > 0 ? Math.round((projDone / projTasks.length) * 100) : 0;
+  const computedStatus = (projTasks.length > 0 && projDone === projTasks.length) ? 'completed' : (projTasks.length > 0 ? 'active' : project.status);
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
@@ -27,8 +40,8 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ project, todos, h
         </button>
         <div>
           <h2 className="text-3xl font-bold text-white tracking-tight">{project.name}</h2>
-          <span className={`text-xs uppercase tracking-widest font-mono mt-1 block ${project.status === 'completed' ? 'text-green-400' : 'text-[#6b6b6b]'}`}>
-            Status: {project.status}
+          <span className={`text-xs uppercase tracking-widest font-mono mt-1 block ${computedStatus === 'completed' ? 'text-green-400' : 'text-[#6b6b6b]'}`}>
+            Status: {computedStatus}
           </span>
         </div>
         <div className="ml-auto flex gap-3">

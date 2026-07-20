@@ -28,21 +28,42 @@ const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
   formatTime, timeRemaining, handleToggleSession, handleStopSession, 
   handleOpenMilestoneModal, nextMilestone
 }) => {
+  const sortedActiveTasks = React.useMemo(() => {
+    const priorityWeight: Record<string, number> = { high: 1, medium: 2, easy: 3 };
+    return [...activeTasks].sort((a, b) => {
+      const weightA = priorityWeight[a.priority] || 4;
+      const weightB = priorityWeight[b.priority] || 4;
+      return weightA - weightB;
+    });
+  }, [activeTasks]);
+
+  const urgentCount = React.useMemo(() => {
+    return sortedActiveTasks.filter(t => t.priority === 'high').length;
+  }, [sortedActiveTasks]);
+
   return (
     <>
       <section className="mb-10">
         <div className="flex justify-between items-end mb-4">
-          <h1 className="text-4xl font-bold text-white tracking-tight capitalize flex items-center gap-3">
-            <span className="material-symbols-outlined text-4xl">Dashboard</span>
-            Dashboard
-          </h1>
+          <div>
+            <h1 className="text-4xl font-bold text-white tracking-tight capitalize flex items-center gap-3">
+              <span className="material-symbols-outlined text-4xl">dashboard</span>
+              Dashboard
+            </h1>
+            {urgentCount > 0 && (
+              <p className="text-xs text-red-400 font-mono mt-2 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">warning</span>
+                {urgentCount} Task{urgentCount > 1 ? 's' : ''} Paling Urgent Memerlukan Penyelesaian Segera
+              </p>
+            )}
+          </div>
           <span className="font-mono text-xs text-[#6b6b6b] mb-2">{stats.pending} Pending Tasks</span>
         </div>
         <div className="w-full h-[1px] bg-[#2a2a2a]"></div>
       </section>
 
       <section className="border border-[#2a2a2a] overflow-hidden mb-12">
-        {activeTasks.map(todo => (
+        {sortedActiveTasks.map(todo => (
           <TodoCard key={todo.id} todo={todo} onUpdate={fetchData} onEdit={handleOpenForm} />
         ))}
         

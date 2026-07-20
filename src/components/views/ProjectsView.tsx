@@ -14,6 +14,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, todos, onOpenProj
         const projTasks = todos.filter(t => t.project_id === proj.id);
         const projDone = projTasks.filter(t => t.status === 'done').length;
         const progress = projTasks.length > 0 ? Math.round((projDone / projTasks.length) * 100) : 0;
+        const computedStatus = (projTasks.length > 0 && projDone === projTasks.length) ? 'completed' : (projTasks.length > 0 ? 'active' : proj.status);
         
         return (
           <article 
@@ -24,8 +25,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, todos, onOpenProj
             <div className="p-8 flex flex-col h-full">
               <div className="flex justify-between items-start mb-6">
                 <div className="bg-[#2a2a2a] px-3 py-1 border border-[#333]">
-                  <span className={`text-[10px] uppercase tracking-widest font-mono ${proj.status === 'completed' ? 'text-green-400' : 'text-[#e5e2e1]'}`}>
-                    {proj.status}
+                  <span className={`text-[10px] uppercase tracking-widest font-mono ${computedStatus === 'completed' ? 'text-green-400' : 'text-[#e5e2e1]'}`}>
+                    {computedStatus}
                   </span>
                 </div>
                 <span className="material-symbols-outlined text-[#6b6b6b] group-hover:text-white transition-colors">arrow_forward</span>
