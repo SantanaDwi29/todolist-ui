@@ -7,9 +7,6 @@ interface DashboardHomeViewProps {
   completedTasks: any[];
   fetchData: () => void;
   handleOpenForm: (todo?: any) => void;
-  newTaskTitle: string;
-  setNewTaskTitle: (val: string) => void;
-  handleQuickAdd: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   analyticsData: any;
   activeSession: any;
   customDuration: number;
@@ -24,7 +21,6 @@ interface DashboardHomeViewProps {
 
 const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
   stats, activeTasks, completedTasks, fetchData, handleOpenForm,
-  newTaskTitle, setNewTaskTitle, handleQuickAdd,
   analyticsData, activeSession, customDuration, setCustomDuration,
   formatTime, timeRemaining, handleToggleSession, handleStopSession, 
   handleOpenMilestoneModal, nextMilestone
@@ -54,20 +50,6 @@ const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
             ))}
           </div>
         )}
-
-        <div className="group bg-[#131313] hover:bg-[#1a1a1a] flex items-center px-6 py-5 transition-colors border-t border-[#2a2a2a]">
-          <div className="flex items-center justify-center h-5 w-5">
-            <span className="material-symbols-outlined text-[#6b6b6b] text-[18px]">add</span>
-          </div>
-          <input 
-            type="text"
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            onKeyDown={handleQuickAdd}
-            className="ml-6 flex-1 bg-transparent border-none text-sm focus:ring-0 outline-none text-white placeholder-[#6b6b6b] font-sans" 
-            placeholder="Press 'Enter' to add a new task..." 
-          />
-        </div>
       </section>
 
       <section className="grid grid-cols-12 gap-6">

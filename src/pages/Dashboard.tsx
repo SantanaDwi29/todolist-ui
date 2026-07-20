@@ -25,7 +25,6 @@ const Dashboard: React.FC = () => {
   const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
   const [editingTodo, setEditingTodo] = useState<any>(null);
-  const [newTaskTitle, setNewTaskTitle] = useState('');
 
   // Audio References
   const tickAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -122,21 +121,6 @@ const Dashboard: React.FC = () => {
   const handleFormSuccess = () => {
     handleCloseForm();
     fetchData();
-  };
-
-  const handleQuickAdd = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && newTaskTitle.trim() !== '') {
-      try {
-        await api.post('/todos', {
-          title: newTaskTitle,
-          priority: 'easy'
-        });
-        setNewTaskTitle('');
-        fetchData();
-      } catch (err) {
-        console.error('Failed to quick add', err);
-      }
-    }
   };
 
   useEffect(() => {
@@ -327,13 +311,6 @@ const Dashboard: React.FC = () => {
             <span>Categories</span>
           </button>
         </nav>
-
-        <div className="mt-auto p-4">
-          <button onClick={() => handleOpenForm()} className="w-full py-4 bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-all text-sm">
-            <span className="text-xl font-normal leading-none">+</span>
-            Add Task
-          </button>
-        </div>
       </aside>
 
       {/* Top App Bar Shell */}
@@ -420,9 +397,6 @@ const Dashboard: React.FC = () => {
               completedTasks={completedTasks}
               fetchData={fetchData}
               handleOpenForm={handleOpenForm}
-              newTaskTitle={newTaskTitle}
-              setNewTaskTitle={setNewTaskTitle}
-              handleQuickAdd={handleQuickAdd}
               analyticsData={analyticsData}
               activeSession={activeSession}
               customDuration={customDuration}
