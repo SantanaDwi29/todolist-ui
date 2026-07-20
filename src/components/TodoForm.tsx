@@ -47,7 +47,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, pro
         deadline: deadline ? new Date(deadline).toISOString() : null,
       };
 
-      if (initialData) {
+      if (initialData && initialData.id) {
         await api.put(`/todos/${initialData.id}`, payload);
       } else {
         await api.post('/todos', payload);
@@ -158,11 +158,13 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, pro
           <div>
             <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Project</label>
             <select
-              className="w-full px-4 py-2 bg-white border border-white focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors text-black"
+              className="w-full px-4 py-2 bg-white border border-white focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors text-black disabled:bg-gray-100 disabled:text-gray-500"
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
+              disabled={!!projectId}
+              required
             >
-              <option value="">No Project</option>
+              {!projectId && <option value="">Select a Project...</option>}
               {projects.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
