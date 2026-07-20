@@ -52,10 +52,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ todos, handleOpenForm }) =>
     return days;
   }, [year, month, daysInMonth, startDay]);
 
-  const handleDayClick = (date: Date) => {
-    handleOpenForm();
-  };
-
   const getTasksForDate = (date: Date) => {
     return todos.filter(t => {
       if (!t.deadline) return false;
@@ -135,8 +131,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ todos, handleOpenForm }) =>
           return (
             <div 
               key={date.toISOString()} 
-              onClick={() => handleDayClick(date)}
-              className="bg-[#181818] min-h-[120px] p-2 hover:bg-[#1f1f1f] transition-colors cursor-pointer flex flex-col relative group"
+              className="bg-[#181818] min-h-[120px] p-2 flex flex-col relative group"
             >
               <div className="flex justify-between items-start mb-2">
                 <span className={`text-sm font-mono ${dateBadgeStyle}`}>
@@ -152,7 +147,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({ todos, handleOpenForm }) =>
               
               <div className="flex-1 space-y-1 overflow-y-auto max-h-[60px] no-scrollbar">
                 {dayTasks.map(task => (
-                  <div key={task.id} className={`text-[10px] truncate px-1.5 py-0.5 ${task.status === 'done' ? 'text-[#6b6b6b] line-through' : 'bg-[#2a2a2a] text-[#e5e2e1]'}`} title={task.title}>
+                  <div 
+                    key={task.id} 
+                    onClick={(e) => { e.stopPropagation(); handleOpenForm(task); }}
+                    className={`text-[10px] truncate px-1.5 py-0.5 cursor-pointer hover:bg-[#323232] transition-colors ${task.status === 'done' ? 'text-[#6b6b6b] line-through' : 'bg-[#2a2a2a] text-[#e5e2e1]'}`} 
+                    title={task.title}
+                  >
                     {task.title}
                   </div>
                 ))}
