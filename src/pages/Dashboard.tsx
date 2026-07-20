@@ -29,12 +29,15 @@ const Dashboard: React.FC = () => {
   // Audio References
   const tickAudioRef = useRef<HTMLAudioElement | null>(null);
   const chimeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const startAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     tickAudioRef.current = new Audio('/sounds/tick.mp3');
     tickAudioRef.current.volume = 0.4;
-    chimeAudioRef.current = new Audio('/sounds/chime.mp3');
+    chimeAudioRef.current = new Audio('/sounds/tithuh-warning.mp3');
     chimeAudioRef.current.volume = 0.6;
+    startAudioRef.current = new Audio('/sounds/fahhhhhhhhhhhhhh.mp3');
+    startAudioRef.current.volume = 0.6;
   }, []);
 
   // Filtering state
@@ -50,6 +53,7 @@ const Dashboard: React.FC = () => {
   const [nextMilestone, setNextMilestone] = useState<any>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [customDuration, setCustomDuration] = useState<number>(45);
+  const [customDurationUnit, setCustomDurationUnit] = useState<'min' | 'sec'>('min');
 
   const navigate = useNavigate();
 
@@ -130,7 +134,9 @@ const Dashboard: React.FC = () => {
         const now = new Date().getTime();
         const start = new Date(activeSession.start_time).getTime();
         const elapsed = Math.floor((now - start) / 1000) + (activeSession.elapsed_seconds || 0);
-        const totalDuration = (activeSession.duration_minutes || 45) * 60;
+        const totalDuration = activeSession.duration_seconds !== null && activeSession.duration_seconds !== undefined
+          ? activeSession.duration_seconds
+          : (activeSession.duration_minutes || 45) * 60;
         const remaining = totalDuration - elapsed;
         return remaining > 0 ? remaining : 0;
       };
@@ -142,7 +148,9 @@ const Dashboard: React.FC = () => {
         setTimeRemaining(calcRemaining());
       }, 1000);
     } else if (activeSession && activeSession.status === 'paused') {
-      const totalDuration = (activeSession.duration_minutes || 45) * 60;
+      const totalDuration = activeSession.duration_seconds !== null && activeSession.duration_seconds !== undefined
+        ? activeSession.duration_seconds
+        : (activeSession.duration_minutes || 45) * 60;
       const remaining = totalDuration - (activeSession.elapsed_seconds || 0);
       setTimeRemaining(remaining > 0 ? remaining : 0);
     } else {
@@ -165,6 +173,13 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const playStartSound = () => {
+    if (startAudioRef.current) {
+      startAudioRef.current.currentTime = 0;
+      startAudioRef.current.play().catch(e => console.error('Audio start failed', e));
+    }
+  };
+
   useEffect(() => {
     if (activeSession && activeSession.status === 'active') {
       if (timeRemaining > 0 && timeRemaining <= 10) {
@@ -174,7 +189,9 @@ const Dashboard: React.FC = () => {
         const now = new Date().getTime();
         const start = new Date(activeSession.start_time).getTime();
         const elapsed = Math.floor((now - start) / 1000) + (activeSession.elapsed_seconds || 0);
-        const totalDuration = (activeSession.duration_minutes || 45) * 60;
+        const totalDuration = activeSession.duration_seconds !== null && activeSession.duration_seconds !== undefined
+          ? activeSession.duration_seconds
+          : (activeSession.duration_minutes || 45) * 60;
         const remaining = totalDuration - elapsed;
 
         if (remaining <= 0) {
@@ -188,18 +205,24 @@ const Dashboard: React.FC = () => {
 
   const handleToggleSession = async () => {
     try {
-      // Play tick sound synchronously to unlock browser audio autoplay permissions
-      playBeep();
-
       if (!activeSession) {
-        const res = await api.post('/focus/start', { duration_minutes: customDuration });
+        // Play start sound immediately to satisfy browser autoplay policy
+        playStartSound();
+        const payload = customDurationUnit === 'sec'
+          ? { duration_seconds: customDuration, duration_minutes: 0 }
+          : { duration_minutes: customDuration };
+        const res = await api.post('/focus/start', payload);
         setActiveSession(res.data);
-      } else if (activeSession.status === 'active') {
-        const res = await api.post('/focus/pause');
-        setActiveSession(res.data);
-      } else if (activeSession.status === 'paused') {
-        const res = await api.post('/focus/resume');
-        setActiveSession(res.data);
+      } else {
+        // Play tick beep to satisfy autoplay policy or give audio feedback
+        playBeep();
+        if (activeSession.status === 'active') {
+          const res = await api.post('/focus/pause');
+          setActiveSession(res.data);
+        } else if (activeSession.status === 'paused') {
+          const res = await api.post('/focus/resume');
+          setActiveSession(res.data);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -401,6 +424,8 @@ const Dashboard: React.FC = () => {
               activeSession={activeSession}
               customDuration={customDuration}
               setCustomDuration={setCustomDuration}
+              customDurationUnit={customDurationUnit}
+              setCustomDurationUnit={setCustomDurationUnit}
               formatTime={formatTime}
               timeRemaining={timeRemaining}
               handleToggleSession={handleToggleSession}

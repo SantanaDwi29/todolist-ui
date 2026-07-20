@@ -11,6 +11,8 @@ interface DashboardHomeViewProps {
   activeSession: any;
   customDuration: number;
   setCustomDuration: (val: number) => void;
+  customDurationUnit: 'min' | 'sec';
+  setCustomDurationUnit: (val: 'min' | 'sec') => void;
   formatTime: (sec: number) => string;
   timeRemaining: number;
   handleToggleSession: () => void;
@@ -22,6 +24,7 @@ interface DashboardHomeViewProps {
 const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
   stats, activeTasks, completedTasks, fetchData, handleOpenForm,
   analyticsData, activeSession, customDuration, setCustomDuration,
+  customDurationUnit, setCustomDurationUnit,
   formatTime, timeRemaining, handleToggleSession, handleStopSession, 
   handleOpenMilestoneModal, nextMilestone
 }) => {
@@ -82,8 +85,15 @@ const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
             {!activeSession ? (
               <>
                 <div className="flex items-center justify-center gap-2 mb-6">
-                   <input type="number" value={customDuration} onChange={e => setCustomDuration(Number(e.target.value))} className="w-12 bg-transparent border-b border-[#404040] text-center text-xs text-white focus:outline-none focus:border-white font-mono" min="1" max="120" />
-                   <span className="text-xs text-[#8a8a8a]">min</span>
+                   <input type="number" value={customDuration} onChange={e => setCustomDuration(Number(e.target.value))} className="w-12 bg-transparent border-b border-[#404040] text-center text-xs text-white focus:outline-none focus:border-white font-mono" min="1" />
+                   <select 
+                     value={customDurationUnit} 
+                     onChange={e => setCustomDurationUnit(e.target.value as 'min' | 'sec')}
+                     className="bg-transparent border-none text-xs text-[#8a8a8a] focus:ring-0 outline-none cursor-pointer"
+                   >
+                     <option value="min" className="bg-[#181818] text-white">min</option>
+                     <option value="sec" className="bg-[#181818] text-white">sec</option>
+                   </select>
                 </div>
                 <button onClick={handleToggleSession} className="px-8 py-2 border border-[#404040] text-white text-xs hover:bg-white hover:text-black transition-colors font-mono uppercase tracking-widest">
                   Start
