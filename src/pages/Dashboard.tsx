@@ -1,16 +1,16 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import TodoForm from '../components/TodoForm';
+import CategoryManagerModal from '../components/CategoryManagerModal';
 import FilterBar from '../components/FilterBar';
 import MilestoneFormModal from '../components/MilestoneFormModal';
-import CategoryManagerModal from '../components/CategoryManagerModal';
 import ProjectFormModal from '../components/ProjectFormModal';
-import DashboardHomeView from '../components/views/DashboardHomeView';
+import TodoForm from '../components/TodoForm';
 import CalendarView from '../components/views/CalendarView';
-import UpcomingView from '../components/views/UpcomingView';
-import ProjectsView from '../components/views/ProjectsView';
+import DashboardHomeView from '../components/views/DashboardHomeView';
 import ProjectDetailView from '../components/views/ProjectDetailView';
+import ProjectsView from '../components/views/ProjectsView';
+import UpcomingView from '../components/views/UpcomingView';
 
 const Dashboard: React.FC = () => {
   const [todos, setTodos] = useState<any[]>([]);
@@ -36,8 +36,8 @@ const Dashboard: React.FC = () => {
     tickAudioRef.current.volume = 0.4;
     chimeAudioRef.current = new Audio('/sounds/tithuh-warning.mp3');
     chimeAudioRef.current.volume = 0.6;
-    startAudioRef.current = new Audio('/sounds/fahhhhhhhhhhhhhh.mp3');
-    startAudioRef.current.volume = 0.6;
+    startAudioRef.current = new Audio('/sounds/thud.mp3');
+    startAudioRef.current.volume = 0.3;
   }, []);
 
   // Filtering state

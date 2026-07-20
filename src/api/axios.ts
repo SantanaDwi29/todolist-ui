@@ -19,6 +19,14 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+const playValidationSound = () => {
+  const audio = new Audio('/sounds/fahhhhhhhhhhhhhh.mp3');
+  audio.volume = 0.6;
+  audio.play().catch((err) => {
+    console.warn('Play validation sound failed:', err);
+  });
+};
+
 api.interceptors.response.use(
   (response) => {
     // Show toast if there's a custom message from backend mutations
@@ -28,6 +36,9 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    if (error.response?.status === 400) {
+      playValidationSound();
+    }
     const message = error.response?.data?.message || error.response?.data?.error || 'An unexpected error occurred';
     toast.error(message);
     return Promise.reject(error);
