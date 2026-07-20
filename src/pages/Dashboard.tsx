@@ -54,6 +54,8 @@ const Dashboard: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [customDuration, setCustomDuration] = useState<number>(45);
   const [customDurationUnit, setCustomDurationUnit] = useState<'min' | 'sec'>('min');
+  const [showTimeOutModal, setShowTimeOutModal] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
 
   const navigate = useNavigate();
 
@@ -159,6 +161,23 @@ const Dashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, [activeSession]);
 
+  useEffect(() => {
+    if (activeSession && activeSession.status === 'active') {
+      const now = new Date().getTime();
+      const start = new Date(activeSession.start_time).getTime();
+      const elapsed = Math.floor((now - start) / 1000) + (activeSession.elapsed_seconds || 0);
+      const totalDuration = activeSession.duration_seconds !== null && activeSession.duration_seconds !== undefined
+        ? activeSession.duration_seconds
+        : (activeSession.duration_minutes || 45) * 60;
+      const remaining = totalDuration - elapsed;
+      if (remaining > 0) {
+        setSessionStarted(true);
+      }
+    } else {
+      setSessionStarted(false);
+    }
+  }, [activeSession]);
+
   const playBeep = () => {
     if (tickAudioRef.current) {
       tickAudioRef.current.currentTime = 0;
@@ -197,6 +216,10 @@ const Dashboard: React.FC = () => {
         if (remaining <= 0) {
           playChime();
           handleStopSession();
+          if (sessionStarted) {
+            setShowTimeOutModal(true);
+          }
+          setSessionStarted(false);
         }
       }
     }
@@ -213,6 +236,7 @@ const Dashboard: React.FC = () => {
           : { duration_minutes: customDuration };
         const res = await api.post('/focus/start', payload);
         setActiveSession(res.data);
+        setSessionStarted(true);
       } else {
         // Play tick beep to satisfy autoplay policy or give audio feedback
         playBeep();
@@ -491,6 +515,32 @@ const Dashboard: React.FC = () => {
             fetchData();
           }}
         />
+      )}
+
+      {showTimeOutModal && (
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center z-[100] p-6 animate-fade-in">
+          <div className="max-w-md w-full bg-[#0a0a0a] border border-red-500 rounded-2xl p-8 text-center shadow-[0_0_50px_rgba(239,68,68,0.2)] transform transition-all scale-100 flex flex-col items-center">
+            {/* Pulsing Warning Icon */}
+            <div className="w-20 h-20 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center mb-6 animate-pulse">
+              <span className="material-symbols-outlined text-red-500 text-4xl">alarm</span>
+            </div>
+            
+            <h2 className="text-2xl font-black text-red-500 uppercase tracking-widest mb-3">
+              Waktu Telah Habis!
+            </h2>
+            
+            <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+              Sesi fokus Anda telah selesai. Saatnya meregangkan tubuh sejenak sebelum memulai sesi berikutnya!
+            </p>
+            
+            <button
+              onClick={() => setShowTimeOutModal(false)}
+              className="w-full py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-lg transition-colors tracking-widest uppercase text-xs"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
