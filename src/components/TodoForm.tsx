@@ -26,6 +26,8 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, pro
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const isProjectLocked = !!initialData?.project_id && !initialData?.id;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -67,7 +69,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, pro
       <div className="bg-black border border-white w-full max-w-lg shadow-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-white flex justify-between items-center">
           <h2 className="text-sm font-bold tracking-widest text-white uppercase">
-            {initialData ? 'Edit Task' : 'New Task Entry'}
+            {initialData && initialData.id ? 'Edit Task' : 'New Task Entry'}
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
             <X className="w-5 h-5" />
@@ -161,10 +163,9 @@ const TodoForm: React.FC<TodoFormProps> = ({ onClose, onSuccess, categories, pro
               className="w-full px-4 py-2 bg-white border border-white focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors text-black disabled:bg-gray-100 disabled:text-gray-500"
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              disabled={!!projectId}
-              required
+              disabled={isProjectLocked}
             >
-              {!projectId && <option value="">Select a Project...</option>}
+              <option value="">No Project / Independent Task</option>
               {projects.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
